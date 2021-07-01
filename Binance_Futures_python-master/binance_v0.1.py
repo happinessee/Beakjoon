@@ -302,7 +302,7 @@ def AutoFitColumnSize(worksheet, columns=None, margin=2):
 post_message(myToken, "#projec", "프로그램 작동이 시작되었습니다!")
 need_quantity = get_CoinQuantity(symbol_set = symbol_set, leverage_set = leverage_set, initial_entry_usdt = initial_entry_usdt)
 total_amount = []
-coin_log_dir = 'C:\\Users\\gygur\\Desktop\\Coin_Log.xlsx'
+coin_log_dir = '/home/ubuntu/Project/Binance_Futures_python-master/Coin_Log.xlsx'
 
 for i in range(len(symbol_set)) :
      client.futures_change_leverage(symbol = symbol_set[i], leverage = leverage_set[i])
