@@ -328,12 +328,12 @@ for j in mode_Choice :
 for i in range(len(symbol_set)) :
     print(total_amount[i])
 # 데이터 딕셔너리를 만들어 엑셀에 저장해 주기 위한 코드
-for i in range(len(symbol_set)) :
+# for i in range(len(symbol_set)) :
     
-    save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
-                          count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
-    save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
-                          count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+#     save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
+#                           count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+#     save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
+#                           count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
 
 # 계속 반복해서 실행시켜 주어야 하는, 실시간으로 초기화 해야 하는 코드
@@ -374,16 +374,16 @@ try :
                     client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
                     count_firing[i] += 1
                     
-                    save_log (mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
-                            count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+                    # save_log (mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
+                    #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
 
                 if (count_watering[i] < n) :
                     client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
                     count_watering[i] += 1
                     
-                    save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
-                            count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+                    # save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
+                    #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
             # 숏 포지션이 손해 
             elif (current_ROE[2 * i + 1] <= short_roe_value[i][count_watering[i]]) :
@@ -392,15 +392,15 @@ try :
                     client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
                     count_firing[i] += 1
                     
-                    save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
-                            count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+                    # save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
+                    #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
                 if (count_watering[i] < n) :
                     client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
                     count_watering[i] += 1
                     
-                    save_log (mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
-                            count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+                    # save_log (mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
+                    #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
             # 총 pnl이 init ial_entry_usdt(0.15)보다 커진다면 모든 포지션 종료 후 다시 재진입
             if (total_pnl[i] >= initial_entry_usdt) :
@@ -411,13 +411,13 @@ try :
                         
                 client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'LONG', type='MARKET', quantity=total_amount[2*i])
                 
-                save_log(mode_Choice = mode_Choice, side = 'CLOSE', positionSide = 'LONG', need_quantity = total_amount[2*i],
-                            count_watering = 'COIN_SELL', count_firing = 'COIN_SELL', symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+                # save_log(mode_Choice = mode_Choice, side = 'CLOSE', positionSide = 'LONG', need_quantity = total_amount[2*i],
+                #             count_watering = 'COIN_SELL', count_firing = 'COIN_SELL', symbol = symbol_set[i], coin_log_dir = coin_log_dir)
                 
                 client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'SHORT', type='MARKET', quantity=abs(total_amount[2*i + 1]))
                 
-                save_log(mode_Choice = mode_Choice, side = 'CLOSE', positionSide = 'SHORT', need_quantity = total_amount[2*i + 1],
-                            count_watering = 'COIN_SELL', count_firing = 'COIN_SELL', symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+                # save_log(mode_Choice = mode_Choice, side = 'CLOSE', positionSide = 'SHORT', need_quantity = total_amount[2*i + 1],
+                #             count_watering = 'COIN_SELL', count_firing = 'COIN_SELL', symbol = symbol_set[i], coin_log_dir = coin_log_dir)
                 
                 message = ("미실현 손익 :  %f" % account.totalUnrealizedProfit) + ("\n현재 지갑 잔고 : %f" % account.totalWalletBalance)
                 post_message(myToken, "#projec", message)
@@ -429,11 +429,11 @@ try :
                 count_watering[i] = 0
                 count_firing[i] = 0
                 
-                save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
-                            count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+                # save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
+                #             count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
                 
-                save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
-                            count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+                # save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
+                #             count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
 except :
     post_message(myToken, "#projec", "프로그램이 오류로 인해 종료되었습니다.. 확인해주세요")             
