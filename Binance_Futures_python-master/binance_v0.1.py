@@ -345,7 +345,7 @@ try :
         # 클라이언트의 종합 정보를 가져오는 변수
         mode_Choice = request_client.get_position_v2()
 
-        
+        account = request_client.get_account_information()
         # 
         
         
