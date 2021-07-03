@@ -464,20 +464,4 @@ except :
 
 # wb.save(coin_log_dir)
 
-# ------------------------------------------------------------------------------------
-# # 물타기, 불타기를 할 때 이용할 ROE 설정 값
-
-# def set_ROE(symbol_set, b, short_a, long_a) :
-    
-#     long_roe_value = []
-#     short_roe_value = []
-    
-#     # 코인마다 다른 펀딩비를 사용하므로 2차원 배열을 이용해준다.
-#     for i in range (length) :  # length 9
-    
-#         long_roe_temp = get_longValue(symbol_set = symbol_set, long_a = long_a, n = n)
-#         long_roe_value.append(long_roe_temp)
-#         short_roe_temp = get_shosymbol_set = symbol_set, short_a = short_a, n = n)
-#         short_roe_value.append(short_roe_temp)
-        
-#     return long_roe_value, short_roe_value
+# -----------------------------------------------------------------------------------
