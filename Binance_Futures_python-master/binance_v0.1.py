@@ -66,7 +66,7 @@ c = -300
 n = 3
 
 # 수식 계산 전 기본 물타기 퍼센티지
-a = -100
+a = -50
 
 
 # 코인의 가격정보를 빼와 우리가 구매할 코인의 양을 구한다.
@@ -199,7 +199,7 @@ def get_positionROE(symbol_set, initial_entry_usdt, mode_Choice) :
     return ROE
 
 
-# totalPNL을 계산해 우리는 0.1USDT가 넘으면 포지션을 종료하고 다시 재진입하기로 했었다.
+# totalpnl을 계산해 우리는 totalpnl이 initial_entry_usdt를 넘으면 포지션을 종료하고 다시 재진입하기로 했었다.
 # 그것을 위한 TOTALPNL 계산이다.
 def get_total_pnl(symbol_set, mode_Choice) :
     
@@ -212,12 +212,10 @@ def get_total_pnl(symbol_set, mode_Choice) :
             if (i.symbol == j) :
                 total_pnl_temp.append(i.unrealizedProfit)
 
-
-    total_pnl_length = len(total_pnl_temp)
     total_pnl = []
 
     # 양 포지션 (long, short)의 pnl을 더해 total_pnl로 만듬
-    for i in range (total_pnl_length) : # length 18
+    for i in range (len(total_pnl_temp)) : # length 18
         if (i % 2 == 0) :
             total_pnl.append(total_pnl_temp[i] + total_pnl_temp[i+1])
             
@@ -296,8 +294,6 @@ def AutoFitColumnSize(worksheet, columns=None, margin=2):
 
     return worksheet
 
-# AutoFitColumnSize(wb['DOGEUSDT'], columns = None, margin = 2)
-
 # 딱 한 번만 실행되어야 할 코드
 post_message(myToken, "#projec", "프로그램 작동이 시작되었습니다!")
 need_quantity = get_CoinQuantity(symbol_set = symbol_set, leverage_set = leverage_set, initial_entry_usdt = initial_entry_usdt)
@@ -344,11 +340,9 @@ try :
         
         # 클라이언트의 종합 정보를 가져오는 변수
         mode_Choice = request_client.get_position_v2()
-
+        # 계좌의 정보를 가져오는 변수
         account = request_client.get_account_information()
-        # 
-        
-        
+
     # -----------------------------------------------------------------------
         # 구매할 코인의 양 초기화
         need_quantity = get_CoinQuantity(symbol_set = symbol_set, leverage_set = leverage_set, initial_entry_usdt = initial_entry_usdt)
@@ -365,10 +359,8 @@ try :
         
         for i in range (len(symbol_set)) :
             
-            if (count_watering[i] == 3) :
-                continue
             # 롱 포지션이 손해 (long 포지션이 (-)%)
-            if (current_ROE[2 * i] <= long_roe_value[i][count_watering[i]]) :
+            if (current_ROE[2 * i] <= long_roe_value[i][count_watering[i]] and count_firing != 3) :
 
                 if (count_watering[i] >= 1 and count_firing[i] < n) :
                     client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
@@ -386,7 +378,7 @@ try :
                     #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
             # 숏 포지션이 손해 
-            elif (current_ROE[2 * i + 1] <= short_roe_value[i][count_watering[i]]) :
+            elif (current_ROE[2 * i + 1] <= short_roe_value[i][count_watering[i]] and count_firing != 3) :
 
                 if (count_watering[i] >= 1 and count_firing[i] < n) :
                     client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
@@ -403,7 +395,8 @@ try :
                     #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
             # 총 pnl이 init ial_entry_usdt(0.15)보다 커진다면 모든 포지션 종료 후 다시 재진입
-            if (total_pnl[i] >= initial_entry_usdt) :
+            if (total_pnl[i] > initial_entry_usdt) :
+                
                 for j in mode_Choice :
                     for k in symbol_set :
                         if (j.symbol == k) :
@@ -419,7 +412,7 @@ try :
                 # save_log(mode_Choice = mode_Choice, side = 'CLOSE', positionSide = 'SHORT', need_quantity = total_amount[2*i + 1],
                 #             count_watering = 'COIN_SELL', count_firing = 'COIN_SELL', symbol = symbol_set[i], coin_log_dir = coin_log_dir)
                 
-                message = ("미실현 손익 :  %f" % account.totalUnrealizedProfit) + ("\n현재 지갑 잔고 : %f" % account.totalWalletBalance)
+                message = (symbol_set[i] + "를 거래했습니다.") + ("\n미실현 손익 :  %f" % account.totalUnrealizedProfit) + ("\n현재 지갑 잔고 : %f" % account.totalWalletBalance)
                 post_message(myToken, "#projec", message)
 
                 # 재진입
