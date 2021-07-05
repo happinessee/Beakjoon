@@ -298,7 +298,9 @@ def AutoFitColumnSize(worksheet, columns=None, margin=2):
 post_message(myToken, "#projec", "프로그램 작동이 시작되었습니다!")
 need_quantity = get_CoinQuantity(symbol_set = symbol_set, leverage_set = leverage_set, initial_entry_usdt = initial_entry_usdt)
 total_amount = []
-check_part = "0-0"
+
+part = "0-0"
+
 # coin_log_dir = '/home/ubuntu/Project/Binance_Futures_python-master/Coin_Log.xlsx'
 
 for i in range(len(symbol_set)) :
@@ -306,8 +308,9 @@ for i in range(len(symbol_set)) :
     
      client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
      client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
-    
-check_part =  "0-1"       
+
+part =  "0-1"
+
 # 코인 별 물, 불탄 횟수
 count_watering = []
 count_firing = []
@@ -331,7 +334,7 @@ for i in range(len(symbol_set)) :
 #                           count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 #     save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
 #                           count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
-check_part = "0-2"
+part = "0-2"
 
 # 계속 반복해서 실행시켜 주어야 하는, 실시간으로 초기화 해야 하는 코드 
 
@@ -340,6 +343,7 @@ try :
         
     # 계속 초기화 해야 하는 변수 --------------------------------------------
         part = "1-0"
+
         # 클라이언트의 종합 정보를 가져오는 변수
         mode_Choice = request_client.get_position_v2()
         # 계좌의 정보를 가져오는 변수
@@ -388,7 +392,7 @@ try :
                     # save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
                     #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
             
-            part = "3-1"
+                part = "3-1"
 
             # 숏 포지션이 손해 
             elif (current_ROE[2 * i + 1] <= short_roe_value[i][count_watering[i]]) :
@@ -412,6 +416,7 @@ try :
             # 총 pnl이 init ial_entry_usdt(0.15)보다 커진다면 모든 포지션 종료 후 다시 재진입
             if (total_pnl[i] > initial_entry_usdt) :
                 part = "4-1"
+                
                 for j in mode_Choice :
                     for k in symbol_set :
                         if (j.symbol == k) :
@@ -448,8 +453,9 @@ try :
                 #             count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
 except :
-    post_message(myToken, "#projec", "프로그램이 오류로 인해 종료되었습니다.. 확인해주세요")             
-        
+    error_message = part + "부분에서 에러가 발생했습니다."
+    post_message(myToken, "#projec", error_message)
+    post_message(myToken, "#projec", "프로그램이 오류로 인해 종료되었습니다.. 확인해주세요")        
 # -------------------------------------------------------------------------------------------------------------
 
 # coin_log_dir = 'C:\\Users\\gygur\\Desktop\\Coin_Log.xlsx'
@@ -476,4 +482,4 @@ except :
 
 # wb.save(coin_log_dir)
 
-# -----------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------
