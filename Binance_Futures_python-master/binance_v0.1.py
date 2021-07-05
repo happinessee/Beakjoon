@@ -55,7 +55,7 @@ leverage_set = [75, 75, 75, 50, 75, 75, 75, 75, 75]
 amount = [0, 2, 2, 0, 0, 2, 3, 1, 1]
 
 # 우리가 넣은 초기 USDT 양
-initial_entry_usdt = 0.15
+initial_entry_usdt = 0.20
 
 # 펀딩비 관련-----------------------------------------------------------------------
 
@@ -138,7 +138,7 @@ def get_longValue (symbol_set, a, n) :
     for i in range(len(symbol_set)) :
         temp = []
 
-        for j in range (1, n + 1) :
+        for j in range (1, n + 2) :
             temp.append(a * b[i] * (2 ** (j)))
         value.append(temp)
     return value
@@ -165,7 +165,7 @@ def get_shortValue (symbol_set, a, n) :
     
     for i in range(len(symbol_set)) :
         temp = []
-        for j in range (1, n + 1) :
+        for j in range (1, n + 2) :
             temp.append(a * b[i] * 2 * (2 ** (j)))
         value.append(temp)
 
@@ -298,7 +298,7 @@ def AutoFitColumnSize(worksheet, columns=None, margin=2):
 post_message(myToken, "#projec", "프로그램 작동이 시작되었습니다!")
 need_quantity = get_CoinQuantity(symbol_set = symbol_set, leverage_set = leverage_set, initial_entry_usdt = initial_entry_usdt)
 total_amount = []
-coin_log_dir = '/home/ubuntu/Project/Binance_Futures_python-master/Coin_Log.xlsx'
+# coin_log_dir = '/home/ubuntu/Project/Binance_Futures_python-master/Coin_Log.xlsx'
 
 for i in range(len(symbol_set)) :
      client.futures_change_leverage(symbol = symbol_set[i], leverage = leverage_set[i])
@@ -358,9 +358,9 @@ try :
         short_roe_value = get_shortValue(symbol_set = symbol_set, a = a, n= n)
         
         for i in range (len(symbol_set)) :
-            
+
             # 롱 포지션이 손해 (long 포지션이 (-)%)
-            if (current_ROE[2 * i] <= long_roe_value[i][count_watering[i]] and count_firing[i] != 3) :
+            if (current_ROE[2 * i] <= long_roe_value[i][count_watering[i]]) :
 
                 if (count_watering[i] >= 1 and count_firing[i] < n) :
                     client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
@@ -378,7 +378,7 @@ try :
                     #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
             # 숏 포지션이 손해 
-            elif (current_ROE[2 * i + 1] <= short_roe_value[i][count_watering[i]] and count_firing[i] != 3) :
+            elif (current_ROE[2 * i + 1] <= short_roe_value[i][count_watering[i]]) :
 
                 if (count_watering[i] >= 1 and count_firing[i] < n) :
                     client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
@@ -412,7 +412,7 @@ try :
                 # save_log(mode_Choice = mode_Choice, side = 'CLOSE', positionSide = 'SHORT', need_quantity = total_amount[2*i + 1],
                 #             count_watering = 'COIN_SELL', count_firing = 'COIN_SELL', symbol = symbol_set[i], coin_log_dir = coin_log_dir)
                 
-                
+                account = request_client.get_account_information()
                 message = (symbol_set[i] + "를 거래했습니다.") + ("\n미실현 손익 :  %f" % account.totalUnrealizedProfit) + ("\n현재 지갑 잔고 : %f" % account.totalWalletBalance)
                 post_message(myToken, "#projec", message)
 
