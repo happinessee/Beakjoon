@@ -298,6 +298,7 @@ def AutoFitColumnSize(worksheet, columns=None, margin=2):
 post_message(myToken, "#projec", "프로그램 작동이 시작되었습니다!")
 need_quantity = get_CoinQuantity(symbol_set = symbol_set, leverage_set = leverage_set, initial_entry_usdt = initial_entry_usdt)
 total_amount = []
+check_part = "0-0"
 # coin_log_dir = '/home/ubuntu/Project/Binance_Futures_python-master/Coin_Log.xlsx'
 
 for i in range(len(symbol_set)) :
@@ -306,7 +307,7 @@ for i in range(len(symbol_set)) :
      client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
      client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
     
-        
+check_part =  "0-1"       
 # 코인 별 물, 불탄 횟수
 count_watering = []
 count_firing = []
@@ -330,37 +331,45 @@ for i in range(len(symbol_set)) :
 #                           count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 #     save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
 #                           count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+check_part = "0-2"
 
+# 계속 반복해서 실행시켜 주어야 하는, 실시간으로 초기화 해야 하는 코드 
 
-# 계속 반복해서 실행시켜 주어야 하는, 실시간으로 초기화 해야 하는 코드
 try :
     while(True) :
         
     # 계속 초기화 해야 하는 변수 --------------------------------------------
-        
+        part = "1-0"
         # 클라이언트의 종합 정보를 가져오는 변수
         mode_Choice = request_client.get_position_v2()
         # 계좌의 정보를 가져오는 변수
         account = request_client.get_account_information()
 
+        part = "1-1"
+
     # -----------------------------------------------------------------------
         # 구매할 코인의 양 초기화
         need_quantity = get_CoinQuantity(symbol_set = symbol_set, leverage_set = leverage_set, initial_entry_usdt = initial_entry_usdt)
-        
+        part = "1-2"
         # total_pnl을 구해준다. (초기 pnl 합은 약 0이다.)
         total_pnl = get_total_pnl(symbol_set = symbol_set, mode_Choice = mode_Choice)
-        
+        part = "1-3"
         # 현재 ROE를 구해준다.
         current_ROE = get_positionROE(symbol_set = symbol_set, initial_entry_usdt = initial_entry_usdt, mode_Choice = mode_Choice)
-        
+        part = "1-4"
         # long일 때, 거래되는 ROE값, short일 때 거래되는 ROE 값
         long_roe_value = get_longValue(symbol_set = symbol_set, a = a, n = n)
         short_roe_value = get_shortValue(symbol_set = symbol_set, a = a, n= n)
-        
+        part = "1-5"
+
         for i in range (len(symbol_set)) :
+
+            part = "2-1"
 
             # 롱 포지션이 손해 (long 포지션이 (-)%)
             if (current_ROE[2 * i] <= long_roe_value[i][count_watering[i]]) :
+
+                part = "2-2"
 
                 if (count_watering[i] >= 1 and count_firing[i] < n) :
                     client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
@@ -369,6 +378,8 @@ try :
                     # save_log (mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'SHORT', need_quantity = need_quantity[i],
                     #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
 
+                part = "2-3"
+
 
                 if (count_watering[i] < n) :
                     client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
@@ -376,9 +387,12 @@ try :
                     
                     # save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
                     #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
+            
+            part = "3-1"
 
             # 숏 포지션이 손해 
             elif (current_ROE[2 * i + 1] <= short_roe_value[i][count_watering[i]]) :
+                part = "3-2"
 
                 if (count_watering[i] >= 1 and count_firing[i] < n) :
                     client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
@@ -386,7 +400,8 @@ try :
                     
                     # save_log(mode_Choice = mode_Choice, side = 'OPEN', positionSide = 'LONG', need_quantity = need_quantity[i],
                     #         count_watering = count_watering[i], count_firing = count_firing[i], symbol = symbol_set[i], coin_log_dir = coin_log_dir)
-
+                
+                part = "3-3"
                 if (count_watering[i] < n) :
                     client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
                     count_watering[i] += 1
@@ -396,7 +411,7 @@ try :
 
             # 총 pnl이 init ial_entry_usdt(0.15)보다 커진다면 모든 포지션 종료 후 다시 재진입
             if (total_pnl[i] > initial_entry_usdt) :
-                
+                part = "4-1"
                 for j in mode_Choice :
                     for k in symbol_set :
                         if (j.symbol == k) :
@@ -416,10 +431,13 @@ try :
                 message = (symbol_set[i] + "를 거래했습니다.") + ("\n미실현 손익 :  %f" % account.totalUnrealizedProfit) + ("\n현재 지갑 잔고 : %f" % account.totalWalletBalance)
                 post_message(myToken, "#projec", message)
 
+                part = "4-2"
+
                 # 재진입
                 client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
                 client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
                 
+                part = "4-3"
                 count_watering[i] = 0
                 count_firing[i] = 0
                 
