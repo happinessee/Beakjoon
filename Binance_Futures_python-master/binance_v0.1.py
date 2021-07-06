@@ -31,7 +31,7 @@ from binance_f.model.constant import *
 binance_api= 'vDiLBxzA2VPlSuBLYXiDF47mScyldTANFIdysXlZYbVtcM9MA7g65F0EKPwG1w9k'
 binance_secret= '3gs0sLJ0HnLsHBmcnqEKH46nEklakikZubDefJEbK8wOusHA8XiDtYj0Xw6LrnLY'
 
-# slack api key
+# slack api key (경민이꺼)
 myToken = "xoxb-2216792091655-2231529462418-t7qBRPN5xN0W42Wsm0LqhBhn"
 
 
@@ -46,16 +46,19 @@ account = request_client.get_account_information()
 
 # 코인 집합
 symbol_set = ['ADAUSDT', 'BNBUSDT', 'ETCUSDT', 'DOGEUSDT', 
-          'TRXUSDT', 'LINKUSDT', 'LTCUSDT', 'EOSUSDT', 'DOTUSDT']
+          'TRXUSDT', 'LINKUSDT', 'LTCUSDT', 'EOSUSDT', 'BCHUSDT', 'DOTUSDT']
 
 # 코인에 따른 최대 레버리지
-leverage_set = [75, 75, 75, 50, 75, 75, 75, 75, 75]
+leverage_set = [75, 75, 75, 50, 75, 75, 75, 75, 75, 75]
 
 # 코인에 따라 허락되는 정밀도 (소수점 자리)
-amount = [0, 2, 2, 0, 0, 2, 3, 1, 1]
+amount = [0, 2, 2, 0, 0, 2, 3, 1, 2, 1]
 
 # 우리가 넣은 초기 USDT 양
 initial_entry_usdt = 0.20
+
+# usdt 조정을 위한 count (usdt양이 100 추가 될 때마다 1씩 증가)
+count = 1
 
 # 펀딩비 관련-----------------------------------------------------------------------
 
@@ -70,11 +73,8 @@ a = -50
 
 
 # 코인의 가격정보를 빼와 우리가 구매할 코인의 양을 구한다.
-
 # 매개변수로 코인의 집합, 레버리지 집합, 초기 투입 usdt량을 넣어주면 각 코인당 넣어야 할 코인의 양을 구해준다.
-
 # 사용법
-
 # need_quantity = getCoinQuantity(symbol_set = symbol_set, leverage_set = leverage_set, initial_entry_usdt = initial_entry_usdt) 
 
 def get_CoinQuantity(symbol_set, leverage_set, initial_entry_usdt) :
@@ -86,13 +86,12 @@ def get_CoinQuantity(symbol_set, leverage_set, initial_entry_usdt) :
         
         price_temp.append(request_client.get_symbol_price_ticker(symbol=symbol_set[i]))
 
-
         coin_price_list.append(price_temp[i][0].price)
 
         need_quantity.append(((leverage_set[i] * initial_entry_usdt) / coin_price_list[i]))
     
     # 코인의 API계산 정밀도
-    amount = [0, 2, 2, 0, 0, 2, 3, 1, 1]
+    amount = [0, 2, 2, 0, 0, 2, 3, 1, 2, 1]
     
     # 코인의 정밀도를 반올림시켜 맞추어준다.
     for i in range(len(symbol_set)) :
@@ -110,6 +109,20 @@ def post_message(token, channel, text):
         data={"channel": channel,"text": text}
     )
     print(response)
+
+# 잔고에 따른 initial_entry_usdt 조정 (0.5%)
+def modify_usdt (totalMarginBalance, initial_entry_usdt, count) :
+    
+    temp1 = 100
+    temp2 = 0.5
+
+    if (totalMarginBalance >= temp1 * count) :
+        temp2 = temp2 * count
+        count += 1
+        return temp2
+    
+    else :
+        return initial_entry_usdt
 
 
 # 펀딩비에 따른 물타기, 불타기 조정
@@ -138,7 +151,7 @@ def get_longValue (symbol_set, a, n) :
     for i in range(len(symbol_set)) :
         temp = []
 
-        for j in range (1, n + 2) :
+        for j in range (n + 1) :
             temp.append(a * b[i] * (2 ** (j)))
         value.append(temp)
     return value
@@ -165,7 +178,7 @@ def get_shortValue (symbol_set, a, n) :
     
     for i in range(len(symbol_set)) :
         temp = []
-        for j in range (1, n + 2) :
+        for j in range (n + 1) :
             temp.append(a * b[i] * 2 * (2 ** (j)))
         value.append(temp)
 
@@ -173,7 +186,6 @@ def get_shortValue (symbol_set, a, n) :
     return value
 
 # 현재 ROE 값을 계산
-
 def get_CurrentROE(symbol_set, initial_entry_usdt, total_pnl) :
     
     ROE = []
@@ -228,7 +240,7 @@ def get_Coinprice(symbol_set) :
         price_temp.append(request_client.get_symbol_price_ticker(symbol=i))
 
 
-    # 코인의 정보에서 가격 정보만 빼서 저장--------------------------------------------------------
+    # 코인의 정보에서 가격 정보만 빼서 저장
     coin_price = {}        # coin_price['BTCUSDT'] 형식으로 가격을 꺼내쓸 수 있게 만들어뒀다.
     coin_price_list = []
 
@@ -238,7 +250,7 @@ def get_Coinprice(symbol_set) :
         coin_price_list.append(price_temp[i][0].price)
         count1 += 1
         
-    return coin_price
+    return coin_price, coin_price_list
 
 
 # 엑셀 파일로 로그 만들기.
@@ -267,8 +279,9 @@ def save_log (mode_Choice, side, positionSide, need_quantity, count_watering, co
     write_ws.append([nowDatetime, side, positionSide, need_quantity, (total_amount[0] if positionSide == 'LONG' else total_amount[1]), count_watering, count_firing])
     write_wb.save(coin_log_dir)
 
-# 엑셀에 필요했던 기본 코드들. 다시 실행 x
+# 딱 한 번만 실행되어야 할 코드 ---------------------------------------------------------------
 
+# 엑셀에 필요했던 기본 코드들. 다시 실행 x
 
 # wb = openpyxl.load_workbook(coin_log_dir)
 
@@ -276,25 +289,8 @@ def save_log (mode_Choice, side, positionSide, need_quantity, count_watering, co
 #     ws = wb[i]
 #     ws.append(['거래 시간', '구매-판매', '포지션', '구매한 코인 양', '포지션에 보유중인 코인 양', '물타기 횟수', '불타기 횟수'])
     
-
 # wb.save(coin_log_dir)
 
-# 엑셀 사이즈를 보기 좋게 자동 정렬해주는 함수
-def AutoFitColumnSize(worksheet, columns=None, margin=2):
-    for i, column_cells in enumerate(worksheet.columns):
-        is_ok = False
-        if columns == None:
-            is_ok = True
-        elif isinstance(columns, list) and i in columns:
-            is_ok = True
-            
-        if is_ok:
-            length = max(len(str(cell.value)) for cell in column_cells)
-            worksheet.column_dimensions[column_cells[0].column_letter].width = length + margin
-
-    return worksheet
-
-# 딱 한 번만 실행되어야 할 코드
 post_message(myToken, "#projec", "프로그램 작동이 시작되었습니다!")
 need_quantity = get_CoinQuantity(symbol_set = symbol_set, leverage_set = leverage_set, initial_entry_usdt = initial_entry_usdt)
 total_amount = []
@@ -354,17 +350,27 @@ try :
     # -----------------------------------------------------------------------
         # 구매할 코인의 양 초기화
         need_quantity = get_CoinQuantity(symbol_set = symbol_set, leverage_set = leverage_set, initial_entry_usdt = initial_entry_usdt)
+
         part = "1-2"
+
         # total_pnl을 구해준다. (초기 pnl 합은 약 0이다.)
         total_pnl = get_total_pnl(symbol_set = symbol_set, mode_Choice = mode_Choice)
+
         part = "1-3"
+
         # 현재 ROE를 구해준다.
         current_ROE = get_positionROE(symbol_set = symbol_set, initial_entry_usdt = initial_entry_usdt, mode_Choice = mode_Choice)
+
         part = "1-4"
+
         # long일 때, 거래되는 ROE값, short일 때 거래되는 ROE 값
         long_roe_value = get_longValue(symbol_set = symbol_set, a = a, n = n)
         short_roe_value = get_shortValue(symbol_set = symbol_set, a = a, n= n)
+
         part = "1-5"
+
+        # usdt 양을 100달러가 추가될 때마다 재조정
+        initial_entry_usdt = modify_usdt(totalMarginBalance = account.totalMarginBalance, initial_entry_usdt = initial_entry_usdt, count = count)
 
         for i in range (len(symbol_set)) :
 
@@ -376,6 +382,7 @@ try :
                 part = "2-2"
 
                 if (count_watering[i] >= 1 and count_firing[i] < n) :
+
                     client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
                     count_firing[i] += 1
                     
@@ -384,8 +391,8 @@ try :
 
                 part = "2-3"
 
-
                 if (count_watering[i] < n) :
+
                     client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
                     count_watering[i] += 1
                     
@@ -399,6 +406,7 @@ try :
                 part = "3-2"
 
                 if (count_watering[i] >= 1 and count_firing[i] < n) :
+
                     client.futures_create_order(symbol=symbol_set[i], side='BUY', positionSide = 'LONG', type='MARKET', quantity=need_quantity[i])
                     count_firing[i] += 1
                     
@@ -407,6 +415,7 @@ try :
                 
                 part = "3-3"
                 if (count_watering[i] < n) :
+
                     client.futures_create_order(symbol=symbol_set[i], side='SELL', positionSide = 'SHORT', type='MARKET', quantity=need_quantity[i])
                     count_watering[i] += 1
                     
@@ -455,7 +464,8 @@ try :
 except :
     error_message = part + "부분에서 에러가 발생했습니다."
     post_message(myToken, "#projec", error_message)
-    post_message(myToken, "#projec", "프로그램이 오류로 인해 종료되었습니다.. 확인해주세요")        
+    post_message(myToken, "#projec", "프로그램이 오류로 인해 종료되었습니다.. 확인해주세요")
+       
 # -------------------------------------------------------------------------------------------------------------
 
 # coin_log_dir = 'C:\\Users\\gygur\\Desktop\\Coin_Log.xlsx'
@@ -470,16 +480,5 @@ except :
 #     createSheet = write_wb.create_sheet(i)
     
 # write_wb.save(coin_log_dir)
-
-
-
-# wb = openpyxl.load_workbook(coin_log_dir)
-
-# for i in symbol_set :
-#     ws = wb.get_sheet_by_name([i])
-#     ws.append(['거래 시간', '구매-판매', '포지션', '구매한 코인 양', '포지션에 보유중인 코인 양', '물타기 횟수', '불타기 횟수'])
-    
-
-# wb.save(coin_log_dir)
 
 # ----------------------------------------------------------------------------------
