@@ -3,7 +3,9 @@ n, m = map(int, (sys.stdin.readline().split()))
 
 sequence = []
 
-for i in range(1, n+1) :
+for i in range(1, m + 1) :
     sequence.append(i)
 
-print(sequence)
+for i in range(n) :
+    if (sequence[m - 1].append(sequence[m-1] + 1) :
+        
