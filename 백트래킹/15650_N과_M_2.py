@@ -5,7 +5,7 @@ for i in range(1, n+1) :
     arr.append(i)
 
 v = []
-select = [False] * 83
+select = [False] * 8
 
 def printFunc() :
     for i in range(n) :
