@@ -14,5 +14,3 @@ for i in range(n) :
             tmp -= 7
 
     print('%.2f' %round(tmp,2))
-
-
