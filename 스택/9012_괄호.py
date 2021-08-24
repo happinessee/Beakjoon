@@ -1,11 +1,15 @@
 t = int(input())
 
-stack = []
+
 
 for i in range(t) :
+    stack = []
+    result = True
+    
     tmp = input()
 
     for j in range(len(tmp)) :
+    
         if tmp[j] == '(' :
             stack.append('(')
 
@@ -14,10 +18,12 @@ for i in range(t) :
                 stack.pop()
             
             else :
-                print("NO")
+                result = False
                 break
-        
-    if (len(stack) == 0) :
+    if (len(stack) != 0) :
+        result = False
+
+    if (result == True) :
         print("YES")
 
     else :

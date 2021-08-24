@@ -1,26 +1,22 @@
+import sys
 stack = []
-
-n = int(input())
+n = int(sys.stdin.readline())
 
 for i in range(n) :
-
-    if (tmp == 'push') :
-        tmp, num = input().split()
-
-    else :
-        tmp = input()
-
-    if (tmp == 'push') :
-        stack.append(num)
+    
+    tmp = sys.stdin.readline().strip()
 
     if (tmp == 'top') :
         print(stack[len(stack) -1]) if len(stack) >= 1 else print(-1)
 
-    if (tmp == 'size') :
+    elif (tmp == 'size') :
         print(len(stack))
 
-    if (tmp == 'pop') :
-        stack.pop() if len(stack) >= 1 else print(-1)
+    elif (tmp == 'pop') :
+        print(stack.pop()) if len(stack) >= 1 else print(-1)
 
-    if (tmp == 'empty') :
+    elif (tmp == 'empty') :
         print(1 if len(stack) == 0 else 0)
+
+    else :
+        stack.append(tmp[5:])

@@ -10,7 +10,8 @@ for i in range(k) :
         stack.pop()
 
     else :
-        stack.append(int(input()))
+        stack.append(tmp)
+
 
 answer = 0
 for i in range(len(stack)) :
