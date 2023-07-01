@@ -1,10 +1,16 @@
-n = int(input())
-arr = []
-for i in range(n) :
-    arr.append(list(map(int, input().split())))
+import sys
 
-arr.sort(key=lambda x: x[1])
-arr.sort(key=lambda x: x[0])
+n = int(sys.stdin.readline())
+
+originList = []
+for i in range(n) :
+	originList.append(list(map(int, sys.stdin.readline().split())))
+
+originList.sort(key=lambda x: x[1])
+originList.sort(key=lambda x: x[0])
 
 for i in range(n) :
-    print(arr[i][0], arr[i][1])
+	sys.stdout.write(str(originList[i][0]))
+	sys.stdout.write(' ')
+	sys.stdout.write(str(originList[i][1]))
+	sys.stdout.write('\n')
